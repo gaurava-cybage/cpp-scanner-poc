@@ -99,12 +99,22 @@ Read `docs/output-format.md`, section `modules[].components[]`, first. Use its f
 - For each function, also record:
   - its doc comment (`clang_Cursor_getBriefCommentText`), if any;
   - its `return` and `throw` points, each with its line and control path.
-- Leave out calls into system headers, except the anchor-rule calls (T7).
+- Leave out calls into system headers, except the anchor-rule calls (T7). Decide this by where the **called** declaration lives, not where the call is written. Anchor rules come first: a vendored `sqlite3.h` inside the solution is still an anchor.
+- Pitfalls to handle:
+  - **`switch`:** a `case` statement contains only the first statement after its label. While walking a switch body, track the current `case` or `default` label and apply it to the sibling statements that follow it. The branch for `default` is `default`.
+  - **`seq`:** number calls after their children (post-order), so in `f(g())` the call `g` gets the lower number.
+  - **Duplicates:** walk each function body once per USR. Inline and template functions in headers appear in many translation units.
+  - **Lambdas:** a `return` inside a lambda is not an exit of the enclosing function. Keep calls inside lambdas in the enclosing function, and note this in `findings.md`.
+  - **Condition text:** take the tokens between the statement's first `(` and its matching `)`. For `do`, the condition comes after the body.
+  - **`async`:** match `PostMessage` / `PostThreadMessage` by their A/W variants and declaring header. `std::thread` is a constructor whose semantic parent is `std::thread`.
+- Add `calls`, `exits` and `doc` to the T4 function model; don't create a parallel class. Build method IDs with one shared function used by T4 and T5.
+- Keep SQLite and Winsock calls; their `DATA_ACCESS` and `IPC` kinds are set in T7.
+- Count `UNRESOLVED` calls and qualified calls to virtual methods (such as `Base::foo()`), and record both in `findings.md`.
 - Entry points:
   - `main`, `wmain`, `WinMain`, `wWinMain`, `DllMain`;
   - functions marked `__declspec(dllexport)` (a DLLExport attribute child on the cursor).
 
-**Done when:** you report counts of calls and entry points, and show the calls of `main` in the sample solution with `seq` and `controlPath`. They must match the source, and the fixture must contain at least one call inside an `if` and one inside a loop.
+**Done when:** you report counts of calls and entry points, and show the calls of `main` in the sample solution with `seq` and `controlPath`. They must match the source, and the fixture must contain at least one call inside an `if` and one inside a loop. Unit tests on small inline snippets also pass for: `f(g())` seq order, a `case` with two calls, an `else if` path, calls inside `try` and `catch`, and a `return` inside a lambda that is not counted as an exit.
 
 ## T6: JSON in the tinypay format (day 3, morning)
 
@@ -117,7 +127,7 @@ Read `docs/output-format.md`, section `modules[].components[]`, first. Use its f
   - ordered by `seq`.
 - Output is deterministic: scanning the same code twice gives byte-identical files apart from `generatedAt`.
 
-**Done when:** `out/sample-facts.json` and `one file in `out/flows/`` are written, the tests pass, and a second run produces identical files apart from `generatedAt`.
+**Done when:** `out/sample-facts.json` and at least one file in `out/flows/` are written, the tests pass, and a second run produces identical files apart from `generatedAt`.
 
 ## T7: Database facts and Winsock rule (day 3, morning; about half a day)
 
