@@ -1,0 +1,976 @@
+{
+  "targetProjectName" : "tinypay",
+  "projectVersion" : "1.0",
+  "targetProjectRootPath" : "D:/tmp/migration-assets/test-projects/tinypay-sp/versions/1.0",
+  "buildTool" : "MAVEN",
+  "generatedAt" : "2026-11-13T04:56:05.522616100Z",
+  "modules" : [ {
+    "name" : "tinypay",
+    "groupId" : "com.tinypay",
+    "artifactId" : "tinypay",
+    "version" : "1.0",
+    "packaging" : "jar",
+    "relativePath" : ".",
+    "hasSource" : true,
+    "dependencies" : [ {
+      "groupId" : "org.springframework.boot",
+      "artifactId" : "spring-boot-starter-web",
+      "version" : "managed",
+      "scope" : "compile"
+    }, {
+      "groupId" : "org.springframework.boot",
+      "artifactId" : "spring-boot-starter-validation",
+      "version" : "managed",
+      "scope" : "compile"
+    }, {
+      "groupId" : "org.springframework.boot",
+      "artifactId" : "spring-boot-starter-data-jpa",
+      "version" : "managed",
+      "scope" : "compile"
+    }, {
+      "groupId" : "org.flywaydb",
+      "artifactId" : "flyway-core",
+      "version" : "managed",
+      "scope" : "compile"
+    }, {
+      "groupId" : "org.flywaydb",
+      "artifactId" : "flyway-mysql",
+      "version" : "managed",
+      "scope" : "compile"
+    }, {
+      "groupId" : "com.mysql",
+      "artifactId" : "mysql-connector-j",
+      "version" : "managed",
+      "scope" : "runtime"
+    } ],
+    "components" : [ {
+      "className" : "AppSetting",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/AppSetting.java",
+      "type" : "ENTITY",
+      "annotations" : [ "Entity", "Table" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "AppSettingRepository",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/AppSettingRepository.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "ArchivePurgeJob",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/ArchivePurgeJob.java",
+      "type" : "COMPONENT",
+      "annotations" : [ "Component", "EnableScheduling" ],
+      "dependencyTypes" : [ "PaymentRecordRepository" ]
+    }, {
+      "className" : "FeeCalculator",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/FeeCalculator.java",
+      "type" : "COMPONENT",
+      "annotations" : [ "Component" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "FeeRule",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/FeeRule.java",
+      "type" : "ENTITY",
+      "annotations" : [ "Entity", "Table" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "Merchant",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/Merchant.java",
+      "type" : "ENTITY",
+      "annotations" : [ "Entity", "Table", "NamedStoredProcedureQuery" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "MerchantRepository",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/MerchantRepository.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "PaymentController",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/PaymentController.java",
+      "type" : "REST_CONTROLLER",
+      "annotations" : [ "RestController", "RequestMapping" ],
+      "dependencyTypes" : [ "AtomicLong", "FeeCalculator", "ReceiptPrinter" ],
+      "endpoints" : [ {
+        "httpMethod" : "POST",
+        "path" : "/api/payments"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/payments/{id}"
+      } ]
+    }, {
+      "className" : "PaymentRecord",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/PaymentRecord.java",
+      "type" : "ENTITY",
+      "annotations" : [ "Entity", "Table" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "PaymentRecordRepository",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/PaymentRecordRepository.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "PaymentStore",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/PaymentStore.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ "Repository" ],
+      "dependencyTypes" : [ "EntityManager" ]
+    }, {
+      "className" : "ReceiptLog",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/ReceiptLog.java",
+      "type" : "ENTITY",
+      "annotations" : [ "Entity", "Table" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "ReceiptLogRepository",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/ReceiptLogRepository.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "ReceiptPrinter",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/ReceiptPrinter.java",
+      "type" : "COMPONENT",
+      "annotations" : [ "Component" ],
+      "dependencyTypes" : [ ]
+    }, {
+      "className" : "RoutineController",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/RoutineController.java",
+      "type" : "REST_CONTROLLER",
+      "annotations" : [ "RestController" ],
+      "dependencyTypes" : [ "JdbcTemplate", "RoutineStore", "MerchantRepository" ],
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/status-label/{status}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/fee"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-jpa/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-repo/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-name/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/payment-count/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/settlement/{id}"
+      }, {
+        "httpMethod" : "POST",
+        "path" : "/api/routines/book/{id}"
+      }, {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/fee-report/{currency}"
+      } ]
+    }, {
+      "className" : "RoutineStore",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/RoutineStore.java",
+      "type" : "REPOSITORY",
+      "annotations" : [ "Repository" ],
+      "dependencyTypes" : [ "EntityManager" ]
+    }, {
+      "className" : "SequenceReferenceGenerator",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/SequenceReferenceGenerator.java",
+      "type" : "COMPONENT",
+      "annotations" : [ "Component" ],
+      "dependencyTypes" : [ "JdbcTemplate" ]
+    }, {
+      "className" : "TinyPayApplication",
+      "packageName" : "com.tinypay",
+      "filePath" : "src/main/java/com/tinypay/TinyPayApplication.java",
+      "type" : "SPRING_BOOT_APPLICATION",
+      "annotations" : [ "SpringBootApplication" ],
+      "dependencyTypes" : [ ]
+    } ],
+    "deploymentRole" : "DEPLOYABLE_APPLICATION"
+  } ],
+  "deploymentTopology" : {
+    "architectureStyle" : "MONOLITH",
+    "deployableApplicationModules" : [ "tinypay" ],
+    "internalLibraryModules" : [ ],
+    "aggregatorModules" : [ ],
+    "unclearModules" : [ ]
+  },
+  "aggregatedDependencies" : [ {
+    "groupId" : "org.springframework.boot",
+    "artifactId" : "spring-boot-starter-web",
+    "version" : "managed",
+    "scope" : "compile"
+  }, {
+    "groupId" : "org.springframework.boot",
+    "artifactId" : "spring-boot-starter-validation",
+    "version" : "managed",
+    "scope" : "compile"
+  }, {
+    "groupId" : "org.springframework.boot",
+    "artifactId" : "spring-boot-starter-data-jpa",
+    "version" : "managed",
+    "scope" : "compile"
+  }, {
+    "groupId" : "org.flywaydb",
+    "artifactId" : "flyway-core",
+    "version" : "managed",
+    "scope" : "compile"
+  }, {
+    "groupId" : "org.flywaydb",
+    "artifactId" : "flyway-mysql",
+    "version" : "managed",
+    "scope" : "compile"
+  }, {
+    "groupId" : "com.mysql",
+    "artifactId" : "mysql-connector-j",
+    "version" : "managed",
+    "scope" : "runtime"
+  } ],
+  "database" : {
+    "dataSources" : [ {
+      "module" : "tinypay",
+      "url" : "jdbc:mysql://localhost:3306/tinypay",
+      "username" : "${TINYPAY_DB_USER:root}",
+      "sourceFile" : "src/main/resources/application.yml"
+    } ],
+    "tables" : [ {
+      "tableName" : "app_setting",
+      "entityClassName" : "com.tinypay.AppSetting",
+      "source" : "ENTITY",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/java/com/tinypay/AppSetting.java",
+      "columns" : [ {
+        "name" : "setting_key",
+        "type" : "String",
+        "primaryKey" : true,
+        "nullable" : false
+      }, {
+        "name" : "setting_value",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "value_type",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "updated_at",
+        "type" : "LocalDateTime",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "fee_rule",
+      "entityClassName" : "com.tinypay.FeeRule",
+      "source" : "ENTITY",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/java/com/tinypay/FeeRule.java",
+      "columns" : [ {
+        "name" : "currency",
+        "type" : "String",
+        "primaryKey" : true,
+        "nullable" : false
+      }, {
+        "name" : "rate",
+        "type" : "BigDecimal",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "merchant",
+      "entityClassName" : "com.tinypay.Merchant",
+      "source" : "ENTITY",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/java/com/tinypay/Merchant.java",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "Long",
+        "primaryKey" : true,
+        "nullable" : false
+      }, {
+        "name" : "name",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "country",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "payment",
+      "entityClassName" : "com.tinypay.PaymentRecord",
+      "source" : "ENTITY",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/java/com/tinypay/PaymentRecord.java",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "Long",
+        "primaryKey" : true,
+        "nullable" : false
+      }, {
+        "name" : "merchant_id",
+        "type" : "Long",
+        "primaryKey" : false,
+        "nullable" : true
+      }, {
+        "name" : "payer",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "payer_ref",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : true
+      }, {
+        "name" : "amount",
+        "type" : "BigDecimal",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "currency",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "fee",
+        "type" : "BigDecimal",
+        "primaryKey" : false,
+        "nullable" : true
+      }, {
+        "name" : "status",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "created_at",
+        "type" : "LocalDateTime",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "receipt_log",
+      "entityClassName" : "com.tinypay.ReceiptLog",
+      "source" : "ENTITY",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/java/com/tinypay/ReceiptLog.java",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "Long",
+        "primaryKey" : true,
+        "nullable" : false
+      }, {
+        "name" : "payment_id",
+        "type" : "Long",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "text",
+        "type" : "String",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "merchant",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "BIGINT",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "name",
+        "type" : "VARCHAR(100)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "country",
+        "type" : "CHAR(2)",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "fee_rule",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "currency",
+        "type" : "CHAR(3)",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "rate",
+        "type" : "DECIMAL(6,4)",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "payment",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "BIGINT",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "merchant_id",
+        "type" : "BIGINT",
+        "primaryKey" : false,
+        "nullable" : true,
+        "references" : "merchant.id"
+      }, {
+        "name" : "payer",
+        "type" : "VARCHAR(100)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "payer_ref",
+        "type" : "VARCHAR(40)",
+        "primaryKey" : false,
+        "nullable" : true
+      }, {
+        "name" : "amount",
+        "type" : "DECIMAL(12,2)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "currency",
+        "type" : "CHAR(3)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "fee",
+        "type" : "DECIMAL(12,2)",
+        "primaryKey" : false,
+        "nullable" : true
+      }, {
+        "name" : "status",
+        "type" : "VARCHAR(10)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "created_at",
+        "type" : "TIMESTAMP",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "receipt_log",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "id",
+        "type" : "BIGINT",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "payment_id",
+        "type" : "BIGINT",
+        "primaryKey" : false,
+        "nullable" : false,
+        "references" : "payment.id"
+      }, {
+        "name" : "text",
+        "type" : "VARCHAR(200)",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "payment_reference_seq",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "prefix",
+        "type" : "VARCHAR(10)",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "next_value",
+        "type" : "BIGINT",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    }, {
+      "tableName" : "app_setting",
+      "source" : "SQL",
+      "module" : "tinypay",
+      "sourceFile" : "src/main/resources/db/migration/V1__init.sql",
+      "columns" : [ {
+        "name" : "setting_key",
+        "type" : "VARCHAR(80)",
+        "primaryKey" : true,
+        "nullable" : true
+      }, {
+        "name" : "setting_value",
+        "type" : "VARCHAR(200)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "value_type",
+        "type" : "VARCHAR(10)",
+        "primaryKey" : false,
+        "nullable" : false
+      }, {
+        "name" : "updated_at",
+        "type" : "TIMESTAMP",
+        "primaryKey" : false,
+        "nullable" : false
+      } ],
+      "relationships" : [ ]
+    } ],
+    "migrationTool" : "FLYWAY",
+    "migrationScripts" : [ "src/main/resources/db/migration/R__reporting_routines.sql", "src/main/resources/db/migration/V1_0_1__payment_routines.sql", "src/main/resources/db/migration/V1__init.sql" ]
+  },
+  "integrations" : {
+    "messageQueues" : [ ],
+    "caches" : [ ],
+    "externalSystems" : [ ]
+  },
+  "deploymentDescriptors" : [ ],
+  "summary" : {
+    "moduleCount" : 1,
+    "deployableApplicationCount" : 1,
+    "componentCount" : 18,
+    "dependencyCount" : 6,
+    "tableCount" : 11,
+    "dataSourceCount" : 1,
+    "messageQueueCount" : 0,
+    "cacheCount" : 0,
+    "externalSystemCount" : 0,
+    "deploymentDescriptorCount" : 0
+  },
+  "codeFlow" : {
+    "schemaVersion" : 1,
+    "projectName" : "tinypay",
+    "sourceKind" : "SOURCE",
+    "entryPoints" : [ {
+      "id" : "HTTP GET /api/payments/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "PaymentController",
+      "methodId" : "com.tinypay.PaymentController#get(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/payments/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/fee",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#fee(BigDecimal)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/fee"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/fee-report/{currency}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#feeReport(String)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/fee-report/{currency}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/merchant-total-jpa/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#merchantTotalJpa(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-jpa/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/merchant-total-name/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#merchantTotalByName(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-name/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/merchant-total-repo/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#merchantTotalRepository(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total-repo/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/merchant-total/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#merchantTotal(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/merchant-total/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/payment-count/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#paymentCount(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/payment-count/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/settlement/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#settlement(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/settlement/{id}"
+      } ]
+    }, {
+      "id" : "HTTP GET /api/routines/status-label/{status}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#statusLabel(String)",
+      "endpoints" : [ {
+        "httpMethod" : "GET",
+        "path" : "/api/routines/status-label/{status}"
+      } ]
+    }, {
+      "id" : "HTTP POST /api/payments",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "PaymentController",
+      "methodId" : "com.tinypay.PaymentController#create(Payment)",
+      "endpoints" : [ {
+        "httpMethod" : "POST",
+        "path" : "/api/payments"
+      } ]
+    }, {
+      "id" : "HTTP POST /api/routines/book/{id}",
+      "kind" : "HTTP",
+      "module" : "tinypay",
+      "className" : "RoutineController",
+      "methodId" : "com.tinypay.RoutineController#book(Long)",
+      "endpoints" : [ {
+        "httpMethod" : "POST",
+        "path" : "/api/routines/book/{id}"
+      } ]
+    }, {
+      "id" : "SCHEDULED ArchivePurgeJob.purge",
+      "kind" : "SCHEDULED",
+      "module" : "tinypay",
+      "className" : "ArchivePurgeJob",
+      "methodId" : "com.tinypay.ArchivePurgeJob#purge()",
+      "schedule" : "cron=0 0 2 * * *"
+    } ],
+    "methods" : [ {
+      "id" : "com.tinypay.ArchivePurgeJob#purge()",
+      "module" : "tinypay",
+      "className" : "com.tinypay.ArchivePurgeJob",
+      "componentType" : "COMPONENT",
+      "methodName" : "purge",
+      "parameterTypes" : [ ],
+      "returnType" : "long",
+      "transactional" : true,
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "PaymentRecordRepository",
+        "targetMethod" : "deleteByCreatedAtBefore",
+        "operation" : "DELETE",
+        "entity" : "PaymentRecord",
+        "line" : 26
+      } ],
+      "sourceFile" : "com/tinypay/ArchivePurgeJob.java",
+      "line" : 25
+    }, {
+      "id" : "com.tinypay.FeeCalculator#fee(BigDecimal)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.FeeCalculator",
+      "componentType" : "COMPONENT",
+      "methodName" : "fee",
+      "parameterTypes" : [ "BigDecimal" ],
+      "returnType" : "BigDecimal",
+      "sourceFile" : "com/tinypay/FeeCalculator.java",
+      "line" : 16
+    }, {
+      "id" : "com.tinypay.PaymentController#create(Payment)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.PaymentController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "create",
+      "parameterTypes" : [ "Payment" ],
+      "returnType" : "String",
+      "calls" : [ {
+        "kind" : "CALL",
+        "targetClass" : "FeeCalculator",
+        "targetMethod" : "fee",
+        "targetMethodIds" : [ "com.tinypay.FeeCalculator#fee(BigDecimal)" ],
+        "resolution" : "EXACT",
+        "line" : 31
+      }, {
+        "kind" : "CALL",
+        "targetClass" : "ReceiptPrinter",
+        "targetMethod" : "print",
+        "targetMethodIds" : [ "com.tinypay.ReceiptPrinter#print(Payment)" ],
+        "resolution" : "EXACT",
+        "line" : 33
+      } ],
+      "sourceFile" : "com/tinypay/PaymentController.java",
+      "line" : 29
+    }, {
+      "id" : "com.tinypay.PaymentController#get(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.PaymentController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "get",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "Payment",
+      "sourceFile" : "com/tinypay/PaymentController.java",
+      "line" : 37
+    }, {
+      "id" : "com.tinypay.ReceiptPrinter#print(Payment)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.ReceiptPrinter",
+      "componentType" : "COMPONENT",
+      "methodName" : "print",
+      "parameterTypes" : [ "Payment" ],
+      "returnType" : "String",
+      "sourceFile" : "com/tinypay/ReceiptPrinter.java",
+      "line" : 8
+    }, {
+      "id" : "com.tinypay.RoutineController#book(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "book",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "int",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "JdbcTemplate",
+        "targetMethod" : "update",
+        "operation" : "SAVE",
+        "routine" : "tp_book_payment",
+        "line" : 94
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 93
+    }, {
+      "id" : "com.tinypay.RoutineController#fee(BigDecimal)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "fee",
+      "parameterTypes" : [ "BigDecimal" ],
+      "returnType" : "BigDecimal",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "Connection",
+        "targetMethod" : "prepareCall",
+        "routine" : "tp_fee_of",
+        "line" : 43
+      }, {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "JdbcTemplate",
+        "targetMethod" : "execute",
+        "line" : 42
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 41
+    }, {
+      "id" : "com.tinypay.RoutineController#feeReport(String)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "feeReport",
+      "parameterTypes" : [ "String" ],
+      "returnType" : "List",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "JdbcTemplate",
+        "targetMethod" : "queryForList",
+        "operation" : "READ",
+        "routine" : "tp_fee_report",
+        "line" : 100
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 99
+    }, {
+      "id" : "com.tinypay.RoutineController#merchantTotal(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "merchantTotal",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "Object",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "SimpleJdbcCall",
+        "targetMethod" : "withProcedureName",
+        "operation" : "READ",
+        "routine" : "tp_merchant_total",
+        "line" : 56
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 54
+    }, {
+      "id" : "com.tinypay.RoutineController#merchantTotalByName(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "merchantTotalByName",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "BigDecimal",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "MerchantRepository",
+        "targetMethod" : "totalByName",
+        "operation" : "READ",
+        "routine" : "tp_merchant_total",
+        "line" : 76
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 75
+    }, {
+      "id" : "com.tinypay.RoutineController#merchantTotalJpa(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "merchantTotalJpa",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "BigDecimal",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "RoutineStore",
+        "targetMethod" : "merchantTotal",
+        "targetMethodIds" : [ "com.tinypay.RoutineStore#merchantTotal(Long)" ],
+        "operation" : "READ",
+        "routine" : "tp_merchant_total",
+        "line" : 64
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 63
+    }, {
+      "id" : "com.tinypay.RoutineController#merchantTotalRepository(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "merchantTotalRepository",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "BigDecimal",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "MerchantRepository",
+        "targetMethod" : "total",
+        "operation" : "READ",
+        "routine" : "tp_merchant_total",
+        "line" : 70
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 69
+    }, {
+      "id" : "com.tinypay.RoutineController#paymentCount(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "paymentCount",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "Long",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "JdbcTemplate",
+        "targetMethod" : "queryForObject",
+        "operation" : "READ",
+        "routine" : "tp_payment_count",
+        "line" : 82
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 81
+    }, {
+      "id" : "com.tinypay.RoutineController#settlement(Long)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "settlement",
+      "parameterTypes" : [ "Long" ],
+      "returnType" : "BigDecimal",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "MerchantRepository",
+        "targetMethod" : "settlementTotal",
+        "operation" : "READ",
+        "routine" : "tp_settlement_total",
+        "line" : 88
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 87
+    }, {
+      "id" : "com.tinypay.RoutineController#statusLabel(String)",
+      "module" : "tinypay",
+      "className" : "com.tinypay.RoutineController",
+      "componentType" : "REST_CONTROLLER",
+      "methodName" : "statusLabel",
+      "parameterTypes" : [ "String" ],
+      "returnType" : "String",
+      "calls" : [ {
+        "kind" : "DATA_ACCESS",
+        "targetClass" : "JdbcTemplate",
+        "targetMethod" : "queryForObject",
+        "routine" : "tp_status_label",
+        "line" : 36
+      } ],
+      "sourceFile" : "com/tinypay/RoutineController.java",
+      "line" : 35
+    } ]
+  }
+}
