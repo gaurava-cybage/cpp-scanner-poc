@@ -1,0 +1,321 @@
+<title>C++ Scanner: How It Works</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a single reading column, with diagrams and wide tables allowed to scroll inside their own box. */
+:root {
+  --bg: #f7f6f2; --surface: #ffffff; --fg: #1d2330; --muted: #5b6373; --line: #dcdfe6;
+  --accent: #1f5fae; --accent-soft: #e4eefb; --ok: #2b7a4b; --warn: #a15c00; --warn-soft: #fbf0de;
+  --step: #eef2f7;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171e; --surface: #1c2029; --fg: #e8eaf0; --muted: #a2a9b8; --line: #303644;
+    --accent: #7fb2f0; --accent-soft: #223149; --ok: #6cc193; --warn: #e8b262; --warn-soft: #3a2e18;
+    --step: #232937; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171e; --surface: #1c2029; --fg: #e8eaf0; --muted: #a2a9b8; --line: #303644;
+  --accent: #7fb2f0; --accent-soft: #223149; --ok: #6cc193; --warn: #e8b262; --warn-soft: #3a2e18;
+  --step: #232937; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 "Inter", "Segoe UI", system-ui, sans-serif;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+main { max-width: 880px; margin: 0 auto; }
+h1, h2, h3 { font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif; line-height: 1.25; text-wrap: balance; }
+h1 { font-size: 2.1rem; margin: 0 0 8px; }
+h2 { font-size: 1.45rem; margin: 48px 0 12px; padding-top: 24px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.1rem; margin: 24px 0 8px; }
+p { margin: 0 0 14px; max-width: 65ch; }
+.lede { font-size: 1.1rem; color: var(--muted); }
+.eyebrow { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 16px 0; }
+.note { background: var(--warn-soft); border-radius: 10px; padding: 14px 18px; margin: 16px 0; color: var(--fg); }
+.tablewrap { overflow-x: auto; margin: 14px 0; border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; background: var(--surface); }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 0; }
+th { background: var(--step); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+code { font: .88em ui-monospace, "Cascadia Code", Consolas, monospace; background: var(--step); padding: 1px 5px; border-radius: 4px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.stat b { display: block; font-size: 1.6rem; font-variant-numeric: tabular-nums; color: var(--accent); font-family: "Space Grotesk", system-ui, sans-serif; }
+.stat span { font-size: .85rem; color: var(--muted); }
+.pipe { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0; counter-reset: s; }
+.pipe div { background: var(--step); border-radius: 10px; padding: 14px; position: relative; font-size: .92rem; }
+.pipe div::before { counter-increment: s; content: counter(s); display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: var(--accent); color: var(--surface); font-weight: 700; font-size: .8rem; margin-bottom: 6px; }
+.pipe div strong { display: block; margin-bottom: 4px; }
+.lib { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 16px 0; }
+.lib article { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.lib h3 { margin: 0 0 4px; font-size: 1rem; }
+.lib .ver { font-size: .8rem; color: var(--muted); margin-bottom: 6px; }
+.lib p { font-size: .92rem; margin: 0; }
+.tag { display: inline-block; font-size: .72rem; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-right: 4px; }
+.tag.ext { background: var(--warn-soft); color: var(--warn); }
+.diagram { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 16px 0; }
+.diagram svg { display: block; max-width: 100%; height: auto; min-width: 560px; }
+.diagram text { font-family: "Inter", "Segoe UI", system-ui, sans-serif; fill: var(--fg); font-size: 13px; }
+.diagram .sub { fill: var(--muted); font-size: 11px; }
+.diagram .node { fill: var(--step); stroke: var(--line); }
+.diagram .key { fill: var(--accent-soft); stroke: var(--accent); }
+.diagram .arrow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+ol.steps, ul.plain { padding-left: 22px; }
+ol.steps li, ul.plain li { margin-bottom: 8px; max-width: 65ch; }
+.decision { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; margin: 14px 0; }
+.decision b { display: block; }
+.slides { counter-reset: sl; }
+.slides li { margin-bottom: 10px; }
+.foot { margin-top: 48px; font-size: .85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<main>
+<p class="eyebrow">Proof of concept · sample system: PayHub</p>
+<h1>C++ Scanner: how it works</h1>
+<p class="lede">The scanner reads a Visual Studio C++ solution without changing it and writes down its structure: parts, dependencies, calls in order, and database and network use. The result is one file, <code>facts.json</code>, that an AI tool can turn into diagrams.</p>
+
+<div class="stats">
+  <div class="stat"><b>6</b><span>projects in the sample solution</span></div>
+  <div class="stat"><b>20</b><span>C/C++ source files read</span></div>
+  <div class="stat"><b>316</b><span>calls recorded, each with order and conditions</span></div>
+  <div class="stat"><b>~40 s</b><span>full scan on this machine</span></div>
+</div>
+
+<h2>1. The libraries we use</h2>
+<p>The product is one Java 17 program with three runtime libraries. Everything else is either Java's own standard library or a Windows tool the program calls.</p>
+
+<div class="lib">
+  <article>
+    <span class="tag">runtime</span>
+    <h3>libclang (LLVM / Clang)</h3>
+    <div class="ver">org.bytedeco:llvm-platform 22.1.8-1.5.14</div>
+    <p>The C/C++ parser behind the Clang compiler. It reads each file the way a compiler does and gives back the code's structure: classes, functions, calls, the tokens of an expression, and any errors. This is the core of the scanner.</p>
+  </article>
+  <article>
+    <span class="tag">runtime</span>
+    <h3>JavaCPP</h3>
+    <div class="ver">bundled with llvm-platform</div>
+    <p>The bridge that lets Java call libclang's C functions. It is part of the same package, so no separate install is needed.</p>
+  </article>
+  <article>
+    <span class="tag">runtime</span>
+    <h3>Jackson (databind)</h3>
+    <div class="ver">com.fasterxml.jackson.core 2.16.1</div>
+    <p>Reads the JSON that Visual Studio's build tool returns, and writes <code>facts.json</code> in the same layout and formatting as the reference file.</p>
+  </article>
+  <article>
+    <span class="tag">tests only</span>
+    <h3>JUnit 5</h3>
+    <div class="ver">5.10.1</div>
+    <p>Runs the automated tests on every build. It is not part of what the scanner does on a real solution.</p>
+  </article>
+  <article>
+    <span class="tag">Java standard library</span>
+    <h3>Java 17</h3>
+    <div class="ver">OpenJDK 17.0.21</div>
+    <p>Reads files and folders, runs regular expressions over the solution file, reads the project XML with its built-in DOM parser (no extra library), and starts the build tool as a separate process.</p>
+  </article>
+  <article>
+    <span class="tag ext">external tool</span>
+    <h3>MSBuild and vswhere</h3>
+    <div class="ver">MSBuild 18.10.1 (needs 17.8 or later)</div>
+    <p>Visual Studio's own project reader. The scanner asks it, read-only, for each project's source list, settings and references. MSBuild does not compile anything in this mode. vswhere finds MSBuild when the scan is not run from a Developer prompt.</p>
+  </article>
+</div>
+
+<h3>Analysed by the scanner, not used by it</h3>
+<p>The scanner recognises calls to two libraries that the sample product uses. It does not link to them.</p>
+<ul class="plain">
+  <li><b>SQLite</b> (<code>sqlite3.h</code>): every call is recorded with its SQL, operation and tables. The header comes from the target machine. The sample uses a stub.</li>
+  <li><b>Winsock 2</b> (<code>winsock2.h</code>): every call is recorded; calls for connecting, listening, sending and receiving get a role.</li>
+  <li><b>vcpkg</b>: only the <code>vcpkg.json</code> file is read, for library versions.</li>
+</ul>
+
+<h2>2. The big picture</h2>
+<p>Six steps run in order, from the solution file to the output files.</p>
+<div class="diagram" role="img" aria-label="Pipeline from solution file through MSBuild, libclang, extraction, rules, to output files">
+<svg viewBox="0 0 860 300">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor" style="fill:var(--muted)"/></marker></defs>
+  <rect class="node key" x="10" y="20" width="150" height="62" rx="8"/>
+  <text x="85" y="46" text-anchor="middle" font-weight="600">Solution (.sln)</text>
+  <text class="sub" x="85" y="66" text-anchor="middle">read only</text>
+  <rect class="node" x="200" y="20" width="150" height="62" rx="8"/>
+  <text x="275" y="46" text-anchor="middle" font-weight="600">MSBuild query</text>
+  <text class="sub" x="275" y="66" text-anchor="middle">per project</text>
+  <rect class="node" x="390" y="20" width="150" height="62" rx="8"/>
+  <text x="465" y="46" text-anchor="middle" font-weight="600">libclang parse</text>
+  <text class="sub" x="465" y="66" text-anchor="middle">per file</text>
+  <rect class="node" x="580" y="20" width="150" height="62" rx="8"/>
+  <text x="655" y="46" text-anchor="middle" font-weight="600">Extract facts</text>
+  <text class="sub" x="655" y="66" text-anchor="middle">classes, calls</text>
+  <rect class="node" x="390" y="150" width="150" height="62" rx="8"/>
+  <text x="465" y="176" text-anchor="middle" font-weight="600">Rules</text>
+  <text class="sub" x="465" y="196" text-anchor="middle">SQLite, Winsock, SQL files</text>
+  <rect class="node key" x="580" y="150" width="150" height="62" rx="8"/>
+  <text x="655" y="176" text-anchor="middle" font-weight="600">Build output</text>
+  <text class="sub" x="655" y="196" text-anchor="middle">sorted, same order each run</text>
+  <rect class="node key" x="200" y="230" width="630" height="50" rx="8"/>
+  <text x="515" y="252" text-anchor="middle" font-weight="600">facts.json · flows/*.json · sql-review.md · review-sample.md</text>
+  <text class="sub" x="515" y="269" text-anchor="middle">what the AI diagram tool and the C++ developer receive</text>
+  <path class="arrow" d="M160,51 L198,51"/>
+  <path class="arrow" d="M350,51 L388,51"/>
+  <path class="arrow" d="M540,51 L578,51"/>
+  <path class="arrow" d="M655,82 L655,148"/>
+  <path class="arrow" d="M580,181 L542,181"/>
+  <path class="arrow" d="M655,212 L655,228"/>
+</svg>
+</div>
+
+<h2>3. First step to last step</h2>
+<ol class="steps">
+  <li><b>Read the solution file.</b> The scanner finds every project listed in the <code>.sln</code> file (<code>SolutionParser</code>, a text match on the project lines).</li>
+  <li><b>Ask MSBuild about each project.</b> One read-only call per <code>.vcxproj</code> returns the source files with their settings, the project references and the project type. This is the only step that needs Visual Studio installed.</li>
+  <li><b>Work out the dependencies.</b> The scanner combines the project references, the link settings in the project file, <code>#pragma comment(lib)</code> lines in the source, and <code>vcpkg.json</code> versions (see section 4).</li>
+  <li><b>Parse every source file with libclang.</b> Each file is read with the settings MSBuild gave for it (section 6). Each parsed file is handed to the extractor before it is released.</li>
+  <li><b>Extract the facts.</b> From each file: classes and their bases, functions, calls with order and conditions, exits (return and throw), and database and network calls checked against the rules.</li>
+  <li><b>Apply the database and network rules.</b> The SQL text is resolved where it is a literal or a simple constant. The SQL files in the solution are read for table definitions.</li>
+  <li><b>Build the output.</b> Duplicates are removed, lists are sorted, and <code>facts.json</code> is written. Then one flow file is written for each program entry point, and the two review files are written.</li>
+</ol>
+<p><b>Last step:</b> the review files are written and the console prints the timing summary. Nothing in the solution is ever changed.</p>
+
+<h2>4. How dependencies are detected: the files read</h2>
+<p>A dependency means "this project needs that one or that library". Four sources are combined. Each one is recorded with where it came from, so a reviewer can trace it.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Dependency type</th><th>File the scanner reads</th><th>What it looks for</th><th>Example in the sample</th></tr></thead>
+  <tbody>
+    <tr><td>Project to project</td><td><code>.sln</code>, then MSBuild's <code>ProjectReference</code> per <code>.vcxproj</code></td><td>Which other project in the solution this one references, matched by full path</td><td>App depends on Core, Storage, Network, Messaging, Integration</td></tr>
+    <tr><td>External library, from settings</td><td><code>.vcxproj</code> (XML, read directly)</td><td><code>AdditionalDependencies</code> under the chosen configuration (e.g. Release|x64); <code>$(…)</code> and <code>%(…)</code> entries are dropped</td><td>App links <code>librdkafka</code> and <code>sqlite3</code></td></tr>
+    <tr><td>External library, from source</td><td>Every <code>.cpp</code>, <code>.h</code> and <code>.hpp</code> in the project folder</td><td><code>#pragma comment(lib, "…")</code> lines</td><td>Network uses <code>ws2_32</code></td></tr>
+    <tr><td>Versions</td><td><code>vcpkg.json</code> in the project folder, then the solution folder</td><td>Version from <code>overrides</code>, else <code>dependencies</code></td><td>None in the sample (no file present)</td></tr>
+    <tr><td>Database tables</td><td><code>.sql</code> files in the solution (hidden folders skipped)</td><td><code>CREATE TABLE</code> statements only</td><td>5 tables, 5 migration scripts</td></tr>
+  </tbody>
+</table></div>
+<div class="note"><b>Known gap:</b> a library set only in an imported settings file (<code>.props</code>) is missed, because the scanner reads only the project's own file. The sample's shared settings file sets none, so this did not affect the result.</div>
+
+<h2>5. What the parser takes as input</h2>
+<p>libclang needs to be told how each file is compiled, or it would misread the code. For every source file the scanner builds a list of arguments from the MSBuild answer:</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Argument</th><th>Comes from</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td>File path</td><td>The file's full path in the solution</td><td>Output refers to files by their path under the solution folder</td></tr>
+    <tr><td>Compiler mode (<code>cl</code>, Microsoft-compatible)</td><td>Always set</td><td>Reads the code the way Visual Studio's compiler does</td></tr>
+    <tr><td>Preprocessor definitions (<code>/D</code>)</td><td>Project settings</td><td>Changes which code exists (for example, <code>WIN32</code>)</td></tr>
+    <tr><td>Include folders (<code>/I</code>)</td><td>Project settings, resolved to real folders</td><td>Lets the parser find headers. Folders that do not exist are skipped</td></tr>
+    <tr><td>Language version (<code>/std:</code>)</td><td>Project settings</td><td>C++14, C++17 or C++20 rules</td></tr>
+    <tr><td>Exception handling and runtime library</td><td>Project settings</td><td>Correct reading of <code>try</code>/<code>catch</code> code</td></tr>
+    <tr><td>Precompiled header and forced includes (<code>/FI</code>)</td><td>Project settings</td><td>Brings in the header the code relies on (for example <code>pch.h</code>)</td></tr>
+    <tr><td>32-bit flag (<code>-m32</code>)</td><td>Platform Win32 only</td><td>Matches 32-bit builds</td></tr>
+  </tbody>
+</table></div>
+<p>Parsing runs with two options: keep reading after a fatal error (so one missing header does not hide the rest of the file), and include detailed preprocessing information (so macros can be traced back to their use).</p>
+
+<h2>6. Parallel or one at a time?</h2>
+<div class="box">
+  <p><b>Today: one at a time.</b> The scanner asks MSBuild about the projects in turn, then parses the files in turn. On the sample, parsing averages about 1.7 seconds per file, and the whole scan takes about 40 seconds.</p>
+  <p><b>Possible later:</b> libclang can parse separate files in parallel, so the parsing step could run on several cores. The extracted facts would then need to be merged in a fixed order to keep the output identical between runs. This is not built, and it was not needed for the 20-file sample.</p>
+</div>
+
+<h2>7. Flow diagram for one file</h2>
+<div class="diagram" role="img" aria-label="Flow for one source file">
+<svg viewBox="0 0 860 220">
+  <defs><marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect class="node" x="10" y="80" width="130" height="58" rx="8"/><text x="75" y="106" text-anchor="middle" font-weight="600">Source file</text><text class="sub" x="75" y="124" text-anchor="middle">+ its arguments</text>
+  <rect class="node" x="180" y="80" width="130" height="58" rx="8"/><text x="245" y="106" text-anchor="middle" font-weight="600">Parse</text><text class="sub" x="245" y="124" text-anchor="middle">libclang</text>
+  <rect class="node" x="350" y="80" width="130" height="58" rx="8"/><text x="415" y="106" text-anchor="middle" font-weight="600">Skip?</text><text class="sub" x="415" y="124" text-anchor="middle">system, outside, implicit</text>
+  <rect class="node key" x="520" y="30" width="150" height="58" rx="8"/><text x="595" y="56" text-anchor="middle" font-weight="600">Keep: classes,</text><text class="sub" x="595" y="74" text-anchor="middle">functions, calls</text>
+  <rect class="node key" x="520" y="130" width="150" height="58" rx="8"/><text x="595" y="156" text-anchor="middle" font-weight="600">Keep: anchor calls</text><text class="sub" x="595" y="174" text-anchor="middle">SQLite, Winsock, async</text>
+  <rect class="node" x="710" y="80" width="140" height="58" rx="8"/><text x="780" y="106" text-anchor="middle" font-weight="600">Merge into</text><text class="sub" x="780" y="124" text-anchor="middle">the solution facts</text>
+  <path class="arrow" d="M140,109 L178,109" style="marker-end:url(#arr2)"/>
+  <path class="arrow" d="M310,109 L348,109" style="marker-end:url(#arr2)"/>
+  <path class="arrow" d="M480,100 L518,62" style="marker-end:url(#arr2)"/>
+  <path class="arrow" d="M480,118 L518,158" style="marker-end:url(#arr2)"/>
+  <path class="arrow" d="M670,58 L708,100" style="marker-end:url(#arr2)"/>
+  <path class="arrow" d="M670,158 L708,120" style="marker-end:url(#arr2)"/>
+</svg>
+</div>
+
+<h2>8. What the scanner skips, and why</h2>
+<p>Skipping keeps the output about the product's own design rather than the platform.</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>Skipped</th><th>Reason</th></tr></thead>
+  <tbody>
+    <tr><td>Files other than C/C++</td><td>Out of scope by design</td></tr>
+    <tr><td>Windows and compiler system code</td><td>Describes the platform, not the product. The few calls that matter are kept (network, background threads)</td></tr>
+    <tr><td>Third-party code outside the solution folder</td><td>Otherwise every external library would appear as part of the product. Calls into it are still recorded</td></tr>
+    <tr><td>Include folders that do not exist</td><td>Listed on screen, then skipped</td></tr>
+    <tr><td>Compiler-generated constructors and copy operators</td><td>Nobody wrote them, so they are not design decisions</td></tr>
+    <tr><td>Calls to local lambdas</td><td>Counted inside the enclosing function instead</td></tr>
+    <tr><td>Repeated code seen in several files</td><td>Recorded once, identified by its unique name</td></tr>
+    <tr><td>Logging, getters and setters, standard library calls</td><td>Left out of the flow files only, to keep the business flow readable. Background-thread starts are kept in the flow</td></tr>
+    <tr><td>SQL that cannot be read</td><td>Marked <code>&lt;dynamic&gt;</code>. The scanner never guesses SQL</td></tr>
+  </tbody>
+</table></div>
+
+<h2>9. What happens when something goes wrong</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>Situation</th><th>What the scanner does</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td>A header is missing (for example <code>sqlite3.h</code>)</td><td>Keeps reading the file and records the error</td><td>The file is analysed; calls to that library are missing. Listed as a diagnostic</td></tr>
+    <tr><td>libclang cannot produce a result for a file</td><td>Drops that file and records why</td><td>That file is missing; the rest is analysed</td></tr>
+    <tr><td>MSBuild not found, or fails on a project</td><td>Stops with an error message and exit code 1</td><td>No output is written. Fix the environment and rerun</td></tr>
+    <tr><td>SQL or database path built at run time</td><td>Marked <code>&lt;dynamic&gt;</code></td><td>Still listed, so a developer can check it</td></tr>
+    <tr><td>Unknown project type</td><td>Marked as "unclear"</td><td>A developer must decide what it is</td></tr>
+    <tr><td>Code that does not compile on this machine</td><td>The scan continues</td><td>Fewer files count as clean; the reason is printed</td></tr>
+  </tbody>
+</table></div>
+<p>In short: one broken file never stops the scan. A broken solution does, and says so.</p>
+
+<h2>10. Business decisions</h2>
+<h3>Decisions already made (in the proof of concept)</h3>
+<div class="decision"><b>Read only.</b> The product is never built, compiled, cleaned or changed.</div>
+<div class="decision"><b>Never guess.</b> Unreadable SQL is shown as <code>&lt;dynamic&gt;</code>, so the result can be trusted where it is stated.</div>
+<div class="decision"><b>Keep going after errors.</b> Partial results with listed gaps are preferred over no results.</div>
+<div class="decision"><b>Same output every run.</b> The only differences between runs are the timestamp and scan time.</div>
+<div class="decision"><b>Windows and Visual Studio only.</b> The project files are read with Visual Studio's own tool, so the scan is tied to that environment.</div>
+
+<h3>Decisions still open (for the team)</h3>
+<ol class="steps">
+  <li><b>Should background threads be followed?</b> Today the main flow stops where a thread starts, so the business logic inside the thread is missing.</li>
+  <li><b>Should the network helper header count?</b> Some network calls (<code>getaddrinfo</code>) come from <code>ws2tcpip.h</code> and are currently not recorded.</li>
+  <li><b>Should SQL passed through a helper function be followed?</b> Some transaction commands go through a wrapper, so they show as dynamic.</li>
+  <li><b>Which real solution, settings and header folders should the target run use?</b> Only the sample has been run.</li>
+  <li><b>Should the scanner support other database libraries?</b> Only SQLite is understood today.</li>
+  <li><b>Should parsing run in parallel?</b> Not needed for 20 files; a decision for a larger target.</li>
+</ol>
+
+<h2>11. Results on the sample, and how far to trust them</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>Check</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Source files parsed cleanly</td><td>19 of 20 (95%)</td></tr>
+    <tr><td>Parts (classes) and functions</td><td>23 classes, 88 functions</td></tr>
+    <tr><td>Calls recorded</td><td>316</td></tr>
+    <tr><td>Database</td><td>3 data sources; 14 SQL statements (11 read fully, 3 marked dynamic); 5 tables</td></tr>
+    <tr><td>Network</td><td>16 Winsock entries</td></tr>
+    <tr><td>Flow for the program start</td><td>50 steps, 27 methods</td></tr>
+    <tr><td>Automated tests</td><td>33 tests, all passing, including a full scan of the sample</td></tr>
+    <tr><td>Repeat runs</td><td>Identical apart from timestamp and scan time</td></tr>
+    <tr><td>Hand check against source</td><td>20 random calls and 10 random classes matched the source. The C++ developer's review is still pending</td></tr>
+  </tbody>
+</table></div>
+<div class="note"><b>Limits to state up front:</b> one sample system; a stub SQLite header (the real one should be used on the target); Windows only; background-thread work not followed; some template overrides not reported.</div>
+
+<h2>12. Suggested slides for management</h2>
+<ol class="slides">
+  <li><b>The problem.</b> Nobody can see quickly how the C++ system fits together: who calls whom, where the data goes, and where the network is used.</li>
+  <li><b>What it does.</b> It reads the code without changing it and writes a map of the system. Use section 2 as the picture.</li>
+  <li><b>How it works.</b> Three libraries, one Visual Studio query, seven steps. Use sections 1 and 3.</li>
+  <li><b>What it found.</b> The numbers from section 11, plus one example flow, drawn from <code>flows/MAIN-App.json</code>.</li>
+  <li><b>How far to trust it.</b> The skips and errors (sections 8 and 9), the limits, and the review still to come.</li>
+  <li><b>What we need.</b> The open decisions in section 10, a run on the real target, and a date for the developer review.</li>
+</ol>
+
+<p class="foot">Source of these facts: <code>docs/findings.md</code> and the scanner code in <code>src/main/java/poc/cppscan/</code>. Results come from the PayHub sample solution. The C++ developer's review has not yet been done.</p>
+</main>

@@ -66,6 +66,7 @@ out/                      scan results (git-ignored)
 4. When unsure about a JavaCPP class or method name, check it in the jar (for example `javap -cp <jar> org.bytedeco.llvm.global.clang | findstr clang_visit`). Do not guess.
 5. Write every assumption, fallback and surprise into `docs/findings.md` as you go.
 6. Never print or log the target solution's source code beyond file names, line numbers and symbol names.
+7. **No sample-specific values in `src/main`.** The scanner must work on any `.sln`. Never hard-code project names, file names, paths, class names or counts from the sample solution; derive everything at runtime from the `.sln`, the `.vcxproj` files and the parsed code. Sample-specific values belong only in `src/test`, as expected results. Key files by their path relative to the solution folder, never by bare file name.
 
 ## Technical notes
 
