@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn *)",
+      "Bash(java *)",
+      "Bash(javap *)",
+      "Bash(msbuild *)",
+      "Bash(powershell -File scripts/check-env.ps1)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "PowerShell(mvn *)",
+      "PowerShell(java *)",
+      "PowerShell(javap *)",
+      "PowerShell(msbuild *)",
+      "PowerShell(.\\scripts\\check-env.ps1)",
+      "PowerShell(git status)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "PowerShell(git push *)"
+    ]
+  }
+}

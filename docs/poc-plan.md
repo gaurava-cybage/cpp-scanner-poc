@@ -33,14 +33,18 @@ Write `scripts/check-env.ps1`, which prints:
 ## T1: Maven skeleton and first libclang parse (day 1, morning)
 
 - Create a `pom.xml` with three dependencies: `llvm-platform` (newest on Maven Central), `jackson-databind` and JUnit 5. Build a fat jar named `cpp-scanner-poc.jar`.
-- Create `src/test/resources/mini-solution/`. It's a tiny Visual Studio solution, `Mini.sln`, with two projects: a console app and a static library it references. Between them they have:
-  - a namespace;
-  - a class hierarchy with one virtual method;
-  - a `main` function;
-  - SQLite code covering the T7 cases: a literal path in `sqlite3_open`, a `CREATE TABLE` with a primary key and a foreign key, an `INSERT` held in a `const char*`, and a `SELECT` built at runtime; plus `db/schema.sql`;
-  - one function that calls Winsock `socket` and `connect`.
-
-  Put a minimal stub `sqlite3.h` in `mini-solution/third_party/` so the fixture needs no package restore.
+- **Test fixture:** use the team's existing sample C++ solution (path given in the prompt). Do not modify it.
+  - Check it against this list and report what it has and lacks:
+    - two projects, one referencing the other;
+    - a namespace;
+    - a class hierarchy with a virtual method;
+    - a `main` (or `WinMain`);
+    - database code: an open call with a path, `CREATE TABLE` with primary and foreign keys, SQL held in a variable, SQL built at runtime, a `.sql` file;
+    - Winsock calls;
+    - a call inside an `if` and one inside a loop;
+    - a `#pragma comment(lib, ...)`.
+  - Missing items are recorded in `findings.md` as "not testable".
+  - Only if no sample solution exists, create a minimal one under `src/test/resources/mini-solution/` that covers the list (with a stub `sqlite3.h` in its `third_party/`).
 - In `parse/`, parse one fixture `.cpp` with hard-coded arguments and print libclang's diagnostics.
 
 **Done when:** `mvn -q package` succeeds, and parsing the fixture prints zero fatal errors.
@@ -48,7 +52,7 @@ Write `scripts/check-env.ps1`, which prints:
 ## T2: Compiler settings from MSBuild (day 1, afternoon)
 
 - Read the project list from the `.sln`.
-- The mini-solution's static library holds the SQLite and Winsock code, and contains a `#pragma comment(lib, "ws2_32.lib")`.
+- The sample solution's static library holds the SQLite and Winsock code, and contains a `#pragma comment(lib, "ws2_32.lib")`.
 - For each `.vcxproj`, run `msbuild -getItem:ClCompile` for the chosen configuration and platform, and parse the JSON.
 - For each source file, build its libclang argument list as described in CLAUDE.md (technical notes).
 - Unit test: given a saved `-getItem` JSON sample, the right argument list comes out.
@@ -58,7 +62,7 @@ Write `scripts/check-env.ps1`, which prints:
   - `#pragma comment(lib, "...")` lines in the sources;
   - versions from `vcpkg.json` if present.
 
-**Done when:** for the mini-solution, the argument list printed for each file contains its defines, include dirs, standard and forced includes, and each project's dependency list is printed.
+**Done when:** for the sample solution, the argument list printed for each file contains its defines, include dirs, standard and forced includes, and each project's dependency list is printed.
 
 ## T3: Parse the whole solution (day 1, end)
 
@@ -70,14 +74,20 @@ Write `scripts/check-env.ps1`, which prints:
 
 ## T4: Classes and functions (day 2, morning)
 
-- Walk each translation unit and skip system headers.
-- Collect:
-  - classes and structs: USR, name, namespace, header file, line, base classes with access, member field types;
-  - functions and methods: USR, name, owning class, parameter types, return type, file, line, and the virtual, static and const flags.
-- Remove duplicates by USR across all files.
-- Assign each class to a module: the project whose folder contains its header, otherwise the first project whose files include it.
+Read `docs/output-format.md`, section `modules[].components[]`, first. Use its field names from the start: `className`, `packageName`, `filePath`, `sourceFiles`, `type`, `annotations`, `baseClasses`, `dependencyTypes`.
 
-**Done when:** you report counts per project and list 3 hand-picked classes with their bases and members for a manual check.
+- Walk each translation unit and skip system headers. Recurse into namespaces and nested classes.
+- Collect:
+  - classes and structs (`CLASS_DECL`, `STRUCT_DECL`, `CLASS_TEMPLATE`): USR, name, namespace (`packageName`, joined with `::`), header file, line, base classes with access and `virtual`, member field types;
+  - functions and methods (`FUNCTION_DECL`, `CXX_METHOD`, `CONSTRUCTOR`, `DESTRUCTOR`, `FUNCTION_TEMPLATE`): USR, name, owning class, parameter types, return type, file, line, and the virtual, pure virtual, static and const flags.
+- Keep only definitions (`clang_isCursorDefinition`), so forward declarations don't create empty classes.
+- The owning class is the **semantic** parent (`clang_getCursorSemanticParent`), not the lexical one, so a method defined in a `.cpp` file still belongs to its class.
+- Fill `sourceFiles` (the `.cpp` files where the class's methods are defined), `type` and `annotations` using the rules in `output-format.md`.
+- `dependencyTypes` follow the spec's simplification rules (no pointers, references or `const`; smart pointers unwrapped; built-in and `std::` types left out except `std::thread` and `std::atomic<...>`). Parameter types keep their full spelling (for example `const std::string&`), because T5's method IDs need it.
+- Remove duplicates by USR across all files.
+- Assign each class to a module using the project file lists from T2, never a hard-coded path: the project whose folder contains its header, otherwise the first project whose files include it. All paths are relative to the solution folder, with forward slashes.
+
+**Done when:** you report counts per project and list 3 hand-picked classes with their bases and members for a manual check. Choose classes that cover different cases: one with a base class and virtual methods, one in a namespace or nested in another class, and one from a different project than the other two. If one of these cases doesn't exist, say so; don't substitute an easier class.
 
 ## T5: Calls and entry points (day 2, afternoon)
 
@@ -89,12 +99,22 @@ Write `scripts/check-env.ps1`, which prints:
 - For each function, also record:
   - its doc comment (`clang_Cursor_getBriefCommentText`), if any;
   - its `return` and `throw` points, each with its line and control path.
-- Leave out calls into system headers, except the anchor-rule calls (T7).
+- Leave out calls into system headers, except the anchor-rule calls (T7). Decide this by where the **called** declaration lives, not where the call is written. Anchor rules come first: a vendored `sqlite3.h` inside the solution is still an anchor.
+- Pitfalls to handle:
+  - **`switch`:** a `case` statement contains only the first statement after its label. While walking a switch body, track the current `case` or `default` label and apply it to the sibling statements that follow it. The branch for `default` is `default`.
+  - **`seq`:** number calls after their children (post-order), so in `f(g())` the call `g` gets the lower number.
+  - **Duplicates:** walk each function body once per USR. Inline and template functions in headers appear in many translation units.
+  - **Lambdas:** a `return` inside a lambda is not an exit of the enclosing function. Keep calls inside lambdas in the enclosing function, and note this in `findings.md`.
+  - **Condition text:** take the tokens between the statement's first `(` and its matching `)`. For `do`, the condition comes after the body.
+  - **`async`:** match `PostMessage` / `PostThreadMessage` by their A/W variants and declaring header. `std::thread` is a constructor whose semantic parent is `std::thread`.
+- Add `calls`, `exits` and `doc` to the T4 function model; don't create a parallel class. Build method IDs with one shared function used by T4 and T5.
+- Keep SQLite and Winsock calls; their `DATA_ACCESS` and `IPC` kinds are set in T7.
+- Count `UNRESOLVED` calls and qualified calls to virtual methods (such as `Base::foo()`), and record both in `findings.md`.
 - Entry points:
   - `main`, `wmain`, `WinMain`, `wWinMain`, `DllMain`;
   - functions marked `__declspec(dllexport)` (a DLLExport attribute child on the cursor).
 
-**Done when:** you report counts of calls and entry points, and show the calls of `main` in the mini-solution with `seq` and `controlPath`. They must match the source, and the fixture must contain at least one call inside an `if` and one inside a loop.
+**Done when:** you report counts of calls and entry points, and show the calls of `main` in the sample solution with `seq` and `controlPath`. They must match the source, and the fixture must contain at least one call inside an `if` and one inside a loop. Unit tests on small inline snippets also pass for: `f(g())` seq order, a `case` with two calls, an `else if` path, calls inside `try` and `catch`, and a `return` inside a lambda that is not counted as an exit.
 
 ## T6: JSON in the tinypay format (day 3, morning)
 
@@ -107,7 +127,7 @@ Write `scripts/check-env.ps1`, which prints:
   - ordered by `seq`.
 - Output is deterministic: scanning the same code twice gives byte-identical files apart from `generatedAt`.
 
-**Done when:** `out/mini-facts.json` and `out/flows/MAIN-Mini.json` are written, the tests pass, and a second run produces identical files apart from `generatedAt`.
+**Done when:** `out/sample-facts.json` and at least one file in `out/flows/` are written, the tests pass, and a second run produces identical files apart from `generatedAt`.
 
 ## T7: Database facts and Winsock rule (day 3, morning; about half a day)
 
@@ -126,7 +146,7 @@ Winsock: when the called function's declaration is in a file ending with `winsoc
 - Role is `IO` for `send` and `recv`.
 - Each entry gets the `methodId` of the calling function, plus file and line.
 
-The mini-solution (T1) must therefore contain:
+The sample solution (T1) must therefore contain:
 - a `sqlite3_open` with a literal path;
 - a `CREATE TABLE` with a primary key and a foreign key;
 - one `INSERT` held in a `const char*` variable;
@@ -134,7 +154,7 @@ The mini-solution (T1) must therefore contain:
 - a small `db/schema.sql`.
 
 **Done when:**
-- the mini-solution's `database` section and `DATA_ACCESS` calls exactly match the expected values (asserted in a test), including the `"<dynamic>"` case;
+- the sample solution's `database` section and `DATA_ACCESS` calls exactly match the expected values (asserted in a test), including the `"<dynamic>"` case;
 - the Winsock entries match;
 - on the target solution, a list of every SQL statement found is saved to `out/sql-review.md`, marked resolved or dynamic, for the C++ developer to check.
 

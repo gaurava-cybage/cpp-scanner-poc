@@ -31,7 +31,7 @@ The full task list is in `docs/poc-plan.md`. The output format is in `docs/outpu
 mvn -q package                                   # build target/cpp-scanner-poc.jar (fat jar)
 mvn -q test                                      # unit tests
 java -jar target/cpp-scanner-poc.jar --solution <path\to\App.sln> --config Release --platform x64 --out out\facts.json --flows out\flows --max-depth 6
-java -jar target/cpp-scanner-poc.jar --solution src\test\resources\mini-solution\Mini.sln --out out\mini-facts.json
+java -jar target/cpp-scanner-poc.jar --solution <path\to\Sample.sln> --out out\sample-facts.json   # the team's sample solution = test fixture
 ```
 
 ## Project layout
@@ -54,18 +54,19 @@ src/main/java/poc/cppscan/
   model/                  plain POJOs mirroring the JSON
   output/                 Jackson writer
 src/test/java/poc/cppscan/
-src/test/resources/mini-solution/   tiny VS solution used as a test fixture
+(test fixture = the team's existing sample solution, outside this folder; never modified)
 out/                      scan results (git-ignored)
 ```
 
 ## Working rules
 
-1. Work on **one task** from `docs/poc-plan.md` at a time, in order.
+1. Work on **one task** from `docs/poc-plan.md` at a time, in order. Before planning a task, read the sections of `docs/output-format.md` it produces, and use its field names and rules. Do not ask questions that file already answers.
 2. At the end of each task, stop and report the evidence its "Done when" line asks for. Wait for a go-ahead before starting the next task.
-3. After every change, run `mvn -q package` and scan the mini-solution. Do not report a task done if either fails.
+3. After every change, run `mvn -q package` and scan the sample solution. Do not report a task done if either fails.
 4. When unsure about a JavaCPP class or method name, check it in the jar (for example `javap -cp <jar> org.bytedeco.llvm.global.clang | findstr clang_visit`). Do not guess.
 5. Write every assumption, fallback and surprise into `docs/findings.md` as you go.
 6. Never print or log the target solution's source code beyond file names, line numbers and symbol names.
+7. **No sample-specific values in `src/main`.** The scanner must work on any `.sln`. Never hard-code project names, file names, paths, class names or counts from the sample solution; derive everything at runtime from the `.sln`, the `.vcxproj` files and the parsed code. Sample-specific values belong only in `src/test`, as expected results. Key files by their path relative to the solution folder, never by bare file name.
 
 ## Technical notes
 
